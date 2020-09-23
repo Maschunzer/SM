@@ -1,0 +1,70 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+
+public class PlayerShooter : MonoBehaviour
+{
+    [SerializeField] private GameObject _bullet;
+    [SerializeField] private GameObject _rocket;
+    [SerializeField] private int _rocketCount;
+    [SerializeField] private float _shootDelay;
+    [SerializeField] private Transform[] _shootPoints;
+    [SerializeField] private bool _isFire;
+    [SerializeField] private bool _isReadyToShoot;
+    [SerializeField] private int _bulletDmg;
+    [SerializeField] private SoundManager _sm;
+    [SerializeField] private int _scoreCount;
+
+    private void Start()
+    {
+        _isReadyToShoot = true;
+        _isFire = false;
+    }
+
+    public void Shoot()
+    {
+        foreach (Transform sp in _shootPoints)
+        {
+            GameObject b = Instantiate(_bullet, sp.position, Quaternion.identity) as GameObject;
+            Destroy(b, 6);
+            if (sp == _shootPoints[_shootPoints.Length - 1])
+            {
+                StartCoroutine(ShootDelay());
+            }
+        }
+        AddScore(1);
+        _sm.PlaySound(3);
+    }
+
+    public void RocketShoot()
+    {
+        if (_rocketCount > 0)
+        {
+            GameObject r = Instantiate(_rocket, transform.position, Quaternion.identity) as GameObject;
+            _rocketCount--;
+            _sm.PlaySound(2);
+            AddScore(10);
+            Destroy(r, 10);
+        }
+
+    }
+
+    IEnumerator ShootDelay()
+    {
+        _isReadyToShoot = false;
+        yield return new WaitForSeconds(_shootDelay);
+        _isReadyToShoot = true;
+    }
+
+    public void Fire(bool fire)
+    {
+        _isFire = fire;
+    }
+
+    private void AddScore(int scoreToAdd)
+    {
+        _scoreCount += scoreToAdd;
+    }
+}
