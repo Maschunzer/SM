@@ -8,19 +8,28 @@ public class PlayerShooter : MonoBehaviour
 {
     [SerializeField] private GameObject _bullet;
     [SerializeField] private GameObject _rocket;
-    [SerializeField] private int _rocketCount;
     [SerializeField] private float _shootDelay;
     [SerializeField] private Transform[] _shootPoints;
     [SerializeField] private bool _isFire;
     [SerializeField] private bool _isReadyToShoot;
     [SerializeField] private int _bulletDmg;
     [SerializeField] private SoundManager _sm;
-    [SerializeField] private int _scoreCount;
+    [SerializeField] private Player _player;
+    //[SerializeField] private Button _buttonR;
 
     private void Start()
     {
+        _sm = GameObject.Find("PlayZone").GetComponent<SoundManager>();
         _isReadyToShoot = true;
         _isFire = false;
+    }
+
+    private void Update()
+    {
+        if (_isFire && _isReadyToShoot)
+        {
+            Shoot();
+        }
     }
 
     public void Shoot()
@@ -34,21 +43,20 @@ public class PlayerShooter : MonoBehaviour
                 StartCoroutine(ShootDelay());
             }
         }
-        AddScore(1);
+        _player.AddScore(1);
         _sm.PlaySound(3);
     }
 
     public void RocketShoot()
     {
-        if (_rocketCount > 0)
+        if (_player.RocketCount > 0)
         {
             GameObject r = Instantiate(_rocket, transform.position, Quaternion.identity) as GameObject;
-            _rocketCount--;
+            _player.RocketCount--;
             _sm.PlaySound(2);
-            AddScore(10);
+            _player.AddScore(10);
             Destroy(r, 10);
         }
-
     }
 
     IEnumerator ShootDelay()
@@ -63,8 +71,18 @@ public class PlayerShooter : MonoBehaviour
         _isFire = fire;
     }
 
-    private void AddScore(int scoreToAdd)
-    {
-        _scoreCount += scoreToAdd;
-    }
+    //public void OnButtonClick()
+    //{
+    //    Shoot();
+    //}
+
+    //private void OnEnable()
+    //{
+    //    _buttonR.onClick.AddListener(OnButtonClick);
+    //}
+
+    //private void OnDisable()
+    //{
+    //    _buttonR.onClick.RemoveListener(OnButtonClick);
+    //}
 }
