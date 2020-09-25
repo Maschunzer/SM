@@ -1,0 +1,110 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class Player : MonoBehaviour
+{
+    [SerializeField] private SoundManager _soundManager;
+    [SerializeField] private int _coinsCount;
+    [SerializeField] public int LifePoints;
+    [SerializeField] public int RocketCount;
+    [SerializeField] public int ScoreCount;
+    [SerializeField] public int BulletDmg;
+    [SerializeField] private GameObject _gameOverPanel;
+    [SerializeField] public bool IsOver;
+    [SerializeField] private ParticleSystem _deadFX;
+    void Start()
+    {
+        _coinsCount = PlayerPrefs.GetInt("coins", 0);
+    }
+
+    private void Update()
+    {
+        if (LifePoints <= 0 && !IsOver)
+        {
+            GameOver();
+        }
+    }
+
+    public void Damage(int dmg)
+    {
+        LifePoints -= dmg;
+        if (LifePoints < 0)
+        {
+            LifePoints = 0;
+        }
+    }
+
+    public void AddScore(int scoreToAdd)
+    {
+        ScoreCount += scoreToAdd;
+    }
+
+    void OnApplicationQuit()
+    {
+        Save();
+    }
+
+    public void Save()
+    {
+        PlayerPrefs.SetInt("coins", _coinsCount);
+        PlayerPrefs.SetInt("NewScore", ScoreCount);
+        if (!PlayerPrefs.HasKey("HS"))
+        {
+            PlayerPrefs.SetInt("HS", ScoreCount);
+        }
+        else
+        {
+            int hs = PlayerPrefs.GetInt("HS");
+            if (hs < ScoreCount)
+            {
+                PlayerPrefs.SetInt("HS", ScoreCount);
+            }
+        }
+    }
+
+    void GameOver()
+    {
+        IsOver = true;
+        _deadFX.Play();
+        _soundManager.PlaySound(0);
+        Hide();
+        Save();
+        _gameOverPanel.SetActive(true);
+    }
+
+    public void Hide()
+    {
+        gameObject.GetComponent<SpriteRenderer>().enabled = false;
+        gameObject.GetComponent<BoxCollider2D>().enabled = false;
+    }
+
+
+    public void OnCollisionEnter2D(Collision2D coll)
+    {
+        if (coll.gameObject.CompareTag("EnemyB"))
+        {
+            Destroy(coll.gameObject);
+            _soundManager.PlaySound(1);
+            Damage(1);
+        }
+        if (coll.gameObject.CompareTag("coin"))
+        {
+            Destroy(coll.gameObject);
+            _coinsCount++;
+            _soundManager.PlaySound(4);
+        }
+        if (coll.gameObject.CompareTag("Enemy"))
+        {
+            Destroy(coll.gameObject);
+            _soundManager.PlaySound(0);
+            Damage(2);
+        }
+        if (coll.gameObject.CompareTag("Boss"))
+        {
+            _soundManager.PlaySound(0);
+            Damage(5);
+        }
+    }
+}
