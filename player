@@ -2,21 +2,26 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
 
 public class Player : MonoBehaviour
 {
-    [SerializeField] private SoundManager _soundManager;
-    [SerializeField] private int _coinsCount;
+    [SerializeField] private SoundManager _sm;
+    [SerializeField] public int CoinsCount;  
     [SerializeField] public int LifePoints;
-    [SerializeField] public int RocketCount;
+    [SerializeField] public int RocketCount; 
     [SerializeField] public int ScoreCount;
     [SerializeField] public int BulletDmg;
     [SerializeField] private GameObject _gameOverPanel;
     [SerializeField] public bool IsOver;
     [SerializeField] private ParticleSystem _deadFX;
+    public event UnityAction<int> HealthChanged;
+
     void Start()
     {
-        _coinsCount = PlayerPrefs.GetInt("coins", 0);
+        CoinsCount = PlayerPrefs.GetInt("coins", 0);
+        HealthChanged?.Invoke(LifePoints);
+
     }
 
     private void Update()
@@ -30,6 +35,7 @@ public class Player : MonoBehaviour
     public void Damage(int dmg)
     {
         LifePoints -= dmg;
+        HealthChanged?.Invoke(LifePoints);
         if (LifePoints < 0)
         {
             LifePoints = 0;
@@ -48,7 +54,7 @@ public class Player : MonoBehaviour
 
     public void Save()
     {
-        PlayerPrefs.SetInt("coins", _coinsCount);
+        PlayerPrefs.SetInt("coins", CoinsCount);
         PlayerPrefs.SetInt("NewScore", ScoreCount);
         if (!PlayerPrefs.HasKey("HS"))
         {
@@ -68,7 +74,7 @@ public class Player : MonoBehaviour
     {
         IsOver = true;
         _deadFX.Play();
-        _soundManager.PlaySound(0);
+        _sm.PlaySound(0);
         Hide();
         Save();
         _gameOverPanel.SetActive(true);
@@ -83,27 +89,34 @@ public class Player : MonoBehaviour
 
     public void OnCollisionEnter2D(Collision2D coll)
     {
-        if (coll.gameObject.CompareTag("EnemyB"))
+        if (coll.gameObject.GetComponent<EnemyBullet>())
         {
             Destroy(coll.gameObject);
-            _soundManager.PlaySound(1);
+            _sm.PlaySound(1);
             Damage(1);
         }
-        if (coll.gameObject.CompareTag("coin"))
+        if (coll.gameObject.GetComponent<Coin>())
         {
             Destroy(coll.gameObject);
-            _coinsCount++;
-            _soundManager.PlaySound(4);
+            _sm.PlaySound(4);
+            CoinsCount++;
+            
         }
-        if (coll.gameObject.CompareTag("Enemy"))
+        if (coll.gameObject.GetComponent<SimpleEnemy>())
         {
             Destroy(coll.gameObject);
-            _soundManager.PlaySound(0);
+            _sm.PlaySound(0);
             Damage(2);
         }
-        if (coll.gameObject.CompareTag("Boss"))
+        if (coll.gameObject.GetComponent<Mine>())
         {
-            _soundManager.PlaySound(0);
+            Destroy(coll.gameObject);
+            _sm.PlaySound(0);
+            Damage(3);
+        }
+        if (coll.gameObject.GetComponent<Boss>())
+        {
+            _sm.PlaySound(0);
             Damage(5);
         }
     }
