@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 public class PlayerShooter : MonoBehaviour
 {
@@ -12,14 +10,11 @@ public class PlayerShooter : MonoBehaviour
     [SerializeField] private Transform[] _shootPoints;
     [SerializeField] private bool _isFire;
     [SerializeField] private bool _isReadyToShoot;
-    [SerializeField] private int _bulletDmg;
     [SerializeField] private SoundManager _sm;
     [SerializeField] private Player _player;
-    //[SerializeField] private Button _buttonR;
 
     private void Start()
     {
-        _sm = GameObject.Find("PlayZone").GetComponent<SoundManager>();
         _isReadyToShoot = true;
         _isFire = false;
     }
@@ -37,11 +32,11 @@ public class PlayerShooter : MonoBehaviour
         foreach (Transform sp in _shootPoints)
         {
             GameObject b = Instantiate(_bullet, sp.position, Quaternion.identity) as GameObject;
-            Destroy(b, 6);
             if (sp == _shootPoints[_shootPoints.Length - 1])
             {
                 StartCoroutine(ShootDelay());
             }
+            Destroy(b, 6);
         }
         _player.AddScore(1);
         _sm.PlaySound(3);
@@ -70,19 +65,4 @@ public class PlayerShooter : MonoBehaviour
     {
         _isFire = fire;
     }
-
-    //public void OnButtonClick()
-    //{
-    //    Shoot();
-    //}
-
-    //private void OnEnable()
-    //{
-    //    _buttonR.onClick.AddListener(OnButtonClick);
-    //}
-
-    //private void OnDisable()
-    //{
-    //    _buttonR.onClick.RemoveListener(OnButtonClick);
-    //}
 }
